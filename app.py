@@ -9,6 +9,7 @@ from email.message import EmailMessage
 import smtplib
 import subprocess
 import importlib.util
+from werkzeug.utils import secure_filename
 
 from auth import auth  # Import auth blueprint
 
@@ -71,7 +72,7 @@ def upload_file():
     if 'user' not in session:
         return redirect(url_for('auth.login'))
 
-    if 'resume' not in request.files or 'jd' not in request.form:
+    if 'resume' not in request.files or request.form.get('jd', '').strip() == '':
         return 'Resume or Job Description missing'
 
     file = request.files['resume']
@@ -81,16 +82,20 @@ def upload_file():
         return 'No selected file'
 
     if file and file.filename.endswith('.pdf'):
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
         text = ""
-        with open(filepath, 'rb') as f:
-            reader = PyPDF2.PdfReader(f)
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text
+        try:
+            with open(filepath, 'rb') as f:
+                reader = PyPDF2.PdfReader(f)
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text
+        except Exception as e:
+            return f'Error processing PDF: {e}'
 
         resume_text = re.sub(r'\s+', ' ', text).lower()
         jd_text = re.sub(r'\s+', ' ', jd_text).lower()
@@ -105,34 +110,13 @@ def upload_file():
         total_jd_skills = len(set(jd_skills))
         match_percentage = round((len(matched_skills) / total_jd_skills) * 100, 2) if total_jd_skills else 0
 
-        html_output = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>ATS Report</title>
-            <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\" rel=\"stylesheet\">
-        </head>
-        <body class=\"bg-light\">
-        <div class=\"container mt-5\">
-            <div class=\"card shadow p-4\">
-                <h3 class=\"text-success mb-3\">✅ Resume Analysis Complete</h3>
-                <h4>ATS Match Score: <span class=\"text-primary\">{match_percentage}%</span></h4>
-                <h5 class=\"mt-4\">Matched Skills:</h5>
-                <p>{', '.join(matched_skills) if matched_skills else 'No skills matched.'}</p>
-                <h5>Resume Skills:</h5>
-                <p>{', '.join(resume_skills)}</p>
-                <h5>Job Description Skills:</h5>
-                <p>{', '.join(jd_skills)}</p>
-                <h5>Entities Detected:</h5>
-                <ul>{''.join(f"<li><strong>{label}</strong>: {text}</li>" for label, text in entities)}</ul>
-                <a href=\"/dashboard\" class=\"btn btn-secondary mt-4\">🔄 Try Another</a>
-                <a href=\"/logout\" class=\"btn btn-danger mt-4\">Logout</a>
-            </div>
-        </div>
-        </body>
-        </html>
-        """
-        return html_output
+        return render_template('result.html',
+            match_percentage=match_percentage,
+            matched_skills=matched_skills,
+            resume_skills=resume_skills,
+            jd_skills=jd_skills,
+            entities=entities
+        )
 
     return 'Only PDF files are allowed'
 
