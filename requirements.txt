@@ -1,0 +1,6 @@
+Flask
+gunicorn
+PyPDF2
+spacy
+Werkzeug
+

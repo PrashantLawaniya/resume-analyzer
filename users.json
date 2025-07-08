@@ -1,0 +1,20 @@
+{
+    "users": [
+        {
+            "email": "123@gmail.com",
+            "password": "scrypt:32768:8:1$bvUZOmCaufZdrNZ0$8eb001159f7b6f07921dc2e0cb0862cb6ed3f2b22b9817dc53e8adb1c385ad48371eb551e336a636779ff8b02fd46c9024f10387b35baff9d288bcbb01e934ea"
+        },
+        {
+            "email": "ppp@gmail.com",
+            "password": "scrypt:32768:8:1$Q6qTesYXeZNWxHix$232c820a65ea8c680474802216aad03b0db21839ccfd64b0ac4f911eafa21908a79e79d199304c2b173fb4ecd9ae01d8de1b475df49a3b2503c93ce5c609ce56"
+        },
+        {
+            "email": "122223@gmail.com",
+            "password": "scrypt:32768:8:1$Ozd6SUWK5waFC1xQ$c1a70e8ded74916cddfcde4697b164cd25f63f6bfa9d3f6a8cec16cbf035cd043bbf38610dad35e584cfd91927d28667ab6e73381b4ab5a445a983f251128f47"
+        },
+        {
+            "email": "prashantlawaniya4132@gmail.com",
+            "password": "scrypt:32768:8:1$8iSfpBFp0Fyvnobf$99eb10e9d04bb50415c4e1ebbf27f6d6ef1ef0db45b57f187d4d17b4947e27106f04dbc0ba0f216076ef1834bf2d7739ad3266ece0ed024ff72f5a46077066ee"
+        }
+    ]
+}
