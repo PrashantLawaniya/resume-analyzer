@@ -5,7 +5,7 @@ import spacy
 import re
 import json
 import random
-from passlib.hash import scrypt
+from werkzeug.security import generate_password_hash, check_password_hash
 from email.message import EmailMessage
 import smtplib
 
