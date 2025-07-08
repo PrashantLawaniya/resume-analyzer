@@ -5,19 +5,18 @@ import spacy
 import re
 import json
 import random
-from werkzeug.security import generate_password_hash, check_password_hash
 from email.message import EmailMessage
 import smtplib
+import subprocess
+import importlib.util
 
 from auth import auth  # Import auth blueprint
-
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for login session
 
 # Register the login/signup blueprint
 app.register_blueprint(auth)
-
 
 # Uploads folder
 UPLOAD_FOLDER = 'uploads'
@@ -26,7 +25,10 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Load spaCy NLP model
+# Load spaCy NLP model with auto-download if missing
+if not importlib.util.find_spec("en_core_web_sm"):
+    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
+
 nlp = spacy.load("en_core_web_sm")
 
 # Skill list
@@ -102,22 +104,20 @@ def upload_file():
         matched_skills = set(resume_skills) & set(jd_skills)
         total_jd_skills = len(set(jd_skills))
         match_percentage = round((len(matched_skills) / total_jd_skills) * 100, 2) if total_jd_skills else 0
-   
-
 
         html_output = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>ATS Report</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\" rel=\"stylesheet\">
         </head>
-        <body class="bg-light">
-        <div class="container mt-5">
-            <div class="card shadow p-4">
-                <h3 class="text-success mb-3">✅ Resume Analysis Complete</h3>
-                <h4>ATS Match Score: <span class="text-primary">{match_percentage}%</span></h4>
-                <h5 class="mt-4">Matched Skills:</h5>
+        <body class=\"bg-light\">
+        <div class=\"container mt-5\">
+            <div class=\"card shadow p-4\">
+                <h3 class=\"text-success mb-3\">✅ Resume Analysis Complete</h3>
+                <h4>ATS Match Score: <span class=\"text-primary\">{match_percentage}%</span></h4>
+                <h5 class=\"mt-4\">Matched Skills:</h5>
                 <p>{', '.join(matched_skills) if matched_skills else 'No skills matched.'}</p>
                 <h5>Resume Skills:</h5>
                 <p>{', '.join(resume_skills)}</p>
@@ -125,8 +125,8 @@ def upload_file():
                 <p>{', '.join(jd_skills)}</p>
                 <h5>Entities Detected:</h5>
                 <ul>{''.join(f"<li><strong>{label}</strong>: {text}</li>" for label, text in entities)}</ul>
-                <a href="/dashboard" class="btn btn-secondary mt-4">🔄 Try Another</a>
-                <a href="/logout" class="btn btn-danger mt-4">Logout</a>
+                <a href=\"/dashboard\" class=\"btn btn-secondary mt-4\">🔄 Try Another</a>
+                <a href=\"/logout\" class=\"btn btn-danger mt-4\">Logout</a>
             </div>
         </div>
         </body>
@@ -138,5 +138,3 @@ def upload_file():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
